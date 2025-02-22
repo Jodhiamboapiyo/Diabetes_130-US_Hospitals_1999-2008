@@ -1,27 +1,53 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diabetes Readmission Prediction</title>
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <h2>Diabetes Readmission Prediction</h2>
     <form action="/predict" method="post">
-        <label>Feature 1:</label>
-        <input type="text" name="feature1" required><br>
-        
-        <label>Feature 2:</label>
-        <input type="text" name="feature2" required><br>
+        <label>Encounter ID:</label>
+        <input type="text" name="Encounter ID"><br>
 
-        <label>Feature 3:</label>
-        <input type="text" name="feature3" required><br>
+        <label>Patient ID:</label>
+        <input type="text" name="Patient ID"><br>
 
-        <label>Feature 4:</label>
-        <input type="text" name="feature4" required><br>
+        <label>Inpatient visits:</label>
+        <input type="text" name="Inpatient visits"><br>
 
-        <button type="submit">Predict</button>
+        <label>Lab Procedures:</label>
+        <input type="text" name="Lab Procedures"><br>
+
+        <label>Primary labtest:</label>
+        <input type="text" name="Primary labtest"><br>
+
+        <label>Secondary labtest:</label>
+        <input type="text" name="Secondary labtest"><br>
+
+        <label>Generic Medications:</label>
+        <input type="text" name="Generic Medications"><br>
+
+        <label>Additional Diagnosis:</label>
+        <input type="text" name="Additional Diagnosis"><br>
+
+        <label>Discharge No:</label>
+        <input type="text" name="Discharge No"><br>
+
+        <label>Hospital Time:</label>
+        <input type="text" name="Hospital Time"><br>
+
+        <label>Age:</label>
+        <input type="text" name="Age"><br>
+
+        <label>Diagnosis Total:</label>
+        <input type="text" name="Diagnosis Total"><br>
+
+        <input type="submit" value="Predict">
     </form>
 
-    <h3>{{ prediction_text }}</h3>
+    <h3>{{ prediction }}</h3>
 </body>
 </html>

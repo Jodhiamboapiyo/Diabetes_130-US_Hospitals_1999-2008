@@ -1,19 +1,34 @@
-import pickle
-import pandas as pd
 from flask import Flask, request, render_template
+import pickle
+import bz2
+import pandas as pd
 
 app = Flask(__name__)
 
-# Load the trained pipeline
-with open("ModelPickle/diabetes_pipeline.pkl", "rb") as f:
-    pipeline = pickle.load(f)
+# Load the bz2 compressed model
+model_path = r"N:\Moringa\afterM\joseline 001\Diabetes_130-US_Hospitals_1999-2008\Deployment\Mbego\ModelPickle\model.pkl.bz2"
 
-# Define selected features (must match training)
-selected_features = [
-    "encounter_id", "patient_nbr", "number_inpatient", "num_lab_procedures",
-    "diag_1", "diag_2", "num_medications", "diag_3", "discharge_disposition_id",
-    "time_in_hospital", "age", "number_diagnoses"
-]
+def load_compressed_model(path):
+    with bz2.BZ2File(path, "rb") as f:
+        return pickle.load(f)
+
+pipeline = load_compressed_model(model_path)
+
+# Mapping renamed features back to original model features
+rename_mapping = {
+    "Encounter ID": "encounter_id",
+    "Patient ID": "patient_nbr",
+    "Inpatient visits": "number_inpatient",
+    "Lab Procedures": "num_lab_procedures",
+    "Primary labtest": "diag_1",
+    "Secondary labtest": "diag_2",
+    "Generic Medications": "num_medications",
+    "Additional Diagnosis": "diag_3",
+    "Discharge No": "discharge_disposition_id",
+    "Hospital Time": "time_in_hospital",
+    "Age": "age",
+    "Diagnosis Total": "number_diagnoses"
+}
 
 @app.route("/")
 def home():
@@ -21,16 +36,21 @@ def home():
 
 @app.route("/predict", methods=["POST"])
 def predict():
-    # Collect user input
-    user_input = {feature: float(request.form.get(feature, 0)) for feature in selected_features}
+    try:
+        # 📌 Collect user input
+        user_input = {rename_mapping[feature]: float(request.form.get(feature, 0)) for feature in rename_mapping}
+        input_df = pd.DataFrame([user_input])  # Convert input to DataFrame
 
-    # Convert input to DataFrame (to match pipeline format)
-    input_df = pd.DataFrame([user_input])
+        # 📌 Ensure correct feature order
+        input_df = input_df[pipeline.feature_names_in_]
 
-    # Make prediction
-    prediction = pipeline.predict(input_df)
+        # 📌 Make prediction
+        prediction = pipeline.predict(input_df)
 
-    return render_template("index.html", prediction=f"Readmission Prediction: {prediction[0]}")
+        return render_template("index.html", prediction=f"Readmission Prediction: {prediction[0]}")
+
+    except Exception as e:
+        return render_template("index.html", prediction=f"Error: {str(e)}")
 
 if __name__ == "__main__":
     app.run(debug=True)
