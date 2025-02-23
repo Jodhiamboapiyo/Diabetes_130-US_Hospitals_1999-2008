@@ -37,14 +37,14 @@ def home():
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        # 📌 Collect user input
+        #  Collect user input
         user_input = {rename_mapping[feature]: float(request.form.get(feature, 0)) for feature in rename_mapping}
         input_df = pd.DataFrame([user_input])  # Convert input to DataFrame
 
-        # 📌 Ensure correct feature order
+        #  Ensure correct feature order
         input_df = input_df[pipeline.feature_names_in_]
 
-        # 📌 Make prediction
+        #  Make prediction
         prediction = pipeline.predict(input_df)
 
         return render_template("index.html", prediction=f"Readmission Prediction: {prediction[0]}")

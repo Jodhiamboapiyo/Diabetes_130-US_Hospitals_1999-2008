@@ -4,50 +4,37 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Diabetes Readmission Prediction</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
-    <h2>Diabetes Readmission Prediction</h2>
-    <form action="/predict" method="post">
-        <label>Encounter ID:</label>
-        <input type="text" name="Encounter ID"><br>
 
-        <label>Patient ID:</label>
-        <input type="text" name="Patient ID"><br>
+    <div class="container">
+        <h1>Diabetes Readmission Predictor</h1>
+        <p>Enter the required details to predict the likelihood of readmission.</p>
 
-        <label>Inpatient visits:</label>
-        <input type="text" name="Inpatient visits"><br>
+        <form action="/predict" method="post">
+            <input type="number" name="Encounter ID" placeholder="Encounter ID" required>
+            <input type="number" name="Patient ID" placeholder="Patient ID" required>
+            <input type="number" name="Inpatient visits" placeholder="Inpatient Visits" required>
+            <input type="number" name="Lab Procedures" placeholder="Lab Procedures" required>
+            <input type="text" name="Primary labtest" placeholder="Primary Lab Test" required>
+            <input type="text" name="Secondary labtest" placeholder="Secondary Lab Test" required>
+            <input type="number" name="Generic Medications" placeholder="Generic Medications" required>
+            <input type="text" name="Additional Diagnosis" placeholder="Additional Diagnosis" required>
+            <input type="number" name="Discharge No" placeholder="Discharge No" required>
+            <input type="number" name="Hospital Time" placeholder="Hospital Time (Days)" required>
+            <input type="number" name="Age" placeholder="Age" required>
+            <input type="number" name="Diagnosis Total" placeholder="Diagnosis Total" required>
+            
+            <button type="submit">Predict</button>
+        </form>
 
-        <label>Lab Procedures:</label>
-        <input type="text" name="Lab Procedures"><br>
+        {% if prediction_text %}
+            <div class="result {% if 'high' in prediction_text %}alert{% endif %}">
+                {{ prediction_text }}
+            </div>
+        {% endif %}
+    </div>
 
-        <label>Primary labtest:</label>
-        <input type="text" name="Primary labtest"><br>
-
-        <label>Secondary labtest:</label>
-        <input type="text" name="Secondary labtest"><br>
-
-        <label>Generic Medications:</label>
-        <input type="text" name="Generic Medications"><br>
-
-        <label>Additional Diagnosis:</label>
-        <input type="text" name="Additional Diagnosis"><br>
-
-        <label>Discharge No:</label>
-        <input type="text" name="Discharge No"><br>
-
-        <label>Hospital Time:</label>
-        <input type="text" name="Hospital Time"><br>
-
-        <label>Age:</label>
-        <input type="text" name="Age"><br>
-
-        <label>Diagnosis Total:</label>
-        <input type="text" name="Diagnosis Total"><br>
-
-        <input type="submit" value="Predict">
-    </form>
-
-    <h3>{{ prediction }}</h3>
 </body>
 </html>
