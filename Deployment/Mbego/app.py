@@ -30,6 +30,9 @@ rename_mapping = {
     "Diagnosis Total": "number_diagnoses"
 }
 
+# Reverse mapping for predictions
+reverse_mapping = {0: 'No readmission', 1: 'more 30 days', 2: 'less 30 days'}
+
 @app.route("/")
 def home():
     return render_template("index.html")
@@ -37,20 +40,24 @@ def home():
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        #  Collect user input
+        # Collect user input
         user_input = {rename_mapping[feature]: float(request.form.get(feature, 0)) for feature in rename_mapping}
         input_df = pd.DataFrame([user_input])  # Convert input to DataFrame
 
-        #  Ensure correct feature order
+        # Ensure correct feature order
         input_df = input_df[pipeline.feature_names_in_]
 
-        #  Make prediction
+        # Make prediction
         prediction = pipeline.predict(input_df)
-
-        return render_template("index.html", prediction=f"Readmission Prediction: {prediction[0]}")
+        
+        # Convert numerical prediction back to original format
+        prediction_result = reverse_mapping.get(prediction[0], "Unknown")
+        
+        return render_template("index.html", prediction_text=f"Prediction Results: {prediction_result}")
 
     except Exception as e:
-        return render_template("index.html", prediction=f"Error: {str(e)}")
+        return render_template("index.html", prediction_text=f"Error: {str(e)}")
 
 if __name__ == "__main__":
     app.run(debug=True)
+    
