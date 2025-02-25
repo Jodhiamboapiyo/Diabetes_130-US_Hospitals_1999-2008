@@ -28,10 +28,16 @@ categorical_columns = [
     "diag_3_category"
 ]
 
-# Ensure final column order matches training data
-final_column_order = numerical_columns + list(encoder.get_feature_names_out(categorical_columns))
+# Fix encoding feature names to avoid errors
+encoded_feature_names = [
+    col.replace("[", "").replace("]", "").replace("<", "").replace(">", "").replace(" ", "_")
+    for col in encoder.get_feature_names_out(categorical_columns)
+]
 
-# Mapping to fix age format issues
+# Ensure final column order matches training data
+final_column_order = numerical_columns + encoded_feature_names
+
+# Fix age format issue to match training data
 age_mapping = {
     "0-10": "[0-10)", "10-20": "[10-20)", "20-30": "[20-30)", 
     "30-40": "[30-40)", "40-50": "[40-50)", "50-60": "[50-60)", 
@@ -46,8 +52,8 @@ def home():
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        # Get user input
-        input_data = {col: request.form[col] for col in numerical_columns + categorical_columns}
+        # Get user input safely
+        input_data = {col: request.form.get(col, "") for col in numerical_columns + categorical_columns}
         input_df = pd.DataFrame([input_data])
 
         # Convert numerical features to correct type
@@ -56,12 +62,12 @@ def predict():
         # Fix age format before encoding
         input_df["age"] = input_df["age"].map(age_mapping).fillna(input_df["age"])  
 
-        # Convert categorical columns to strings (fix unknown category issue)
+        # Convert categorical columns to strings
         input_df[categorical_columns] = input_df[categorical_columns].astype(str)
 
         # Apply OneHotEncoder to categorical columns
         encoded_data = encoder.transform(input_df[categorical_columns])
-        encoded_df = pd.DataFrame(encoded_data, columns=encoder.get_feature_names_out(categorical_columns))
+        encoded_df = pd.DataFrame(encoded_data, columns=encoded_feature_names)
 
         # Merge numerical and encoded categorical features
         processed_input = pd.concat([input_df[numerical_columns], encoded_df], axis=1)
