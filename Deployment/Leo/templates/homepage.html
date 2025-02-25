@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diabetes Readmission Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h2>Diabetes Readmission Prediction</h2>
+        
+        <!-- Display Prediction Result -->
+        {% if prediction %}
+            <div class="result">
+                <h3>Prediction: <span class="prediction">{{ prediction }}</span></h3>
+            </div>
+        {% endif %}
+
+        <form action="{{ url_for('predict') }}" method="post">
+            <div class="form-group">
+                <label for="race">Race:</label>
+                <select name="race" required>
+                    <option value="Caucasian">Caucasian</option>
+                    <option value="AfricanAmerican">African American</option>
+                    <option value="Other">Other</option>
+                    <option value="Asian">Asian</option>
+                    <option value="Hispanic">Hispanic</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="gender">Gender:</label>
+                <select name="gender" required>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="age">Age:</label>
+                <select name="age" required>
+                    <option value="0-10">0-10</option>
+                    <option value="10-20">10-20</option>
+                    <option value="20-30">20-30</option>
+                    <option value="30-40">30-40</option>
+                    <option value="40-50">40-50</option>
+                    <option value="50-60">50-60</option>
+                    <option value="60-70">60-70</option>
+                    <option value="70-80">70-80</option>
+                    <option value="80-90">80-90</option>
+                    <option value="90-100">90-100</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="admission_type_id">Admission Type:</label>
+                <input type="number" name="admission_type_id" min="1" max="8" required>
+            </div>
+
+            <div class="form-group">
+                <label for="discharge_disposition_id">Discharge Disposition:</label>
+                <input type="number" name="discharge_disposition_id" min="1" max="29" required>
+            </div>
+
+            <div class="form-group">
+                <label for="admission_source_id">Admission Source:</label>
+                <input type="number" name="admission_source_id" min="1" max="25" required>
+            </div>
+
+            <div class="form-group">
+                <label for="time_in_hospital">Time in Hospital (days):</label>
+                <input type="number" name="time_in_hospital" min="1" max="30" required>
+            </div>
+
+            <div class="form-group">
+                <label for="num_lab_procedures">Number of Lab Procedures:</label>
+                <input type="number" name="num_lab_procedures" required>
+            </div>
+
+            <div class="form-group">
+                <label for="num_procedures">Number of Procedures:</label>
+                <input type="number" name="num_procedures" required>
+            </div>
+
+            <div class="form-group">
+                <label for="num_medications">Number of Medications:</label>
+                <input type="number" name="num_medications" required>
+            </div>
+
+            <div class="form-group">
+                <label for="number_outpatient">Number of Outpatient Visits:</label>
+                <input type="number" name="number_outpatient" required>
+            </div>
+
+            <div class="form-group">
+                <label for="number_emergency">Number of Emergency Visits:</label>
+                <input type="number" name="number_emergency" required>
+            </div>
+
+            <div class="form-group">
+                <label for="number_inpatient">Number of Inpatient Visits:</label>
+                <input type="number" name="number_inpatient" required>
+            </div>
+
+            <div class="form-group">
+                <label for="number_diagnoses">Number of Diagnoses:</label>
+                <input type="number" name="number_diagnoses" required>
+            </div>
+
+            <div class="form-group">
+                <label for="max_glu_serum">Max Glucose Serum:</label>
+                <select name="max_glu_serum">
+                    <option value="None">None</option>
+                    <option value="Norm">Normal</option>
+                    <option value=">200">>200</option>
+                    <option value=">300">>300</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="A1Cresult">A1C Result:</label>
+                <select name="A1Cresult">
+                    <option value="None">None</option>
+                    <option value="Norm">Normal</option>
+                    <option value=">7">>7</option>
+                    <option value=">8">>8</option>
+                </select>
+            </div>
+
+            {% for drug in ['metformin', 'repaglinide', 'nateglinide', 'chlorpropamide', 'glimepiride', 'glipizide', 'glyburide', 'tolbutamide', 'pioglitazone', 'rosiglitazone', 'acarbose', 'miglitol', 'tolazamide', 'insulin', 'glyburide-metformin'] %}
+            <div class="form-group">
+                <label for="{{ drug }}">{{ drug.capitalize() }}:</label>
+                <select name="{{ drug }}">
+                    <option value="No">No</option>
+                    <option value="Steady">Steady</option>
+                    <option value="Up">Up</option>
+                    <option value="Down">Down</option>
+                </select>
+            </div>
+            {% endfor %}
+            
+            <div class="form-group">
+                <label for="change">Change in Medication:</label>
+                <select name="change">
+                    <option value="No">No</option>
+                    <option value="Ch">Yes</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="diabetesMed">Diabetes Medication:</label>
+                <select name="diabetesMed">
+                    <option value="No">No</option>
+                    <option value="Yes">Yes</option>
+                </select>
+            </div>
+
+            {% for diag in ['diag_1_category', 'diag_2_category', 'diag_3_category'] %}
+            <div class="form-group">
+                <label for="{{ diag }}">{{ diag.replace('_', ' ').capitalize() }}:</label>
+                <select name="{{ diag }}" required>
+                    <option value="Circulatory System Diseases">Circulatory System Diseases</option>
+                    <option value="Endocrine, Nutritional, and Metabolic">Endocrine, Nutritional, and Metabolic</option>
+                    <option value="Respiratory System Diseases">Respiratory System Diseases</option>
+                    <option value="Genitourinary Diseases">Genitourinary Diseases</option>
+                    <option value="Infectious and Parasitic Diseases">Infectious and Parasitic Diseases</option>
+                    <option value="Symptoms, Signs, and Ill-Defined Conditions">Symptoms, Signs, and Ill-Defined Conditions</option>
+                    <option value="Digestive System Diseases">Digestive System Diseases</option>
+                    <option value="Injury and Poisoning">Injury and Poisoning</option>
+                    <option value="Mental Disorders">Mental Disorders</option>
+                    <option value="Blood Diseases">Blood Diseases</option>
+                    <option value="Skin and Subcutaneous Tissue Diseases">Skin and Subcutaneous Tissue Diseases</option>
+                    <option value="Musculoskeletal Diseases">Musculoskeletal Diseases</option>
+                    <option value="Neoplasms">Neoplasms</option>
+                    <option value="Nervous System Disorders">Nervous System Disorders</option>
+                    <option value="Unclassified">Unclassified</option>
+                    <option value="Pregnancy-Related Conditions">Pregnancy-Related Conditions</option>
+                    <option value="Congenital Anomalies">Congenital Anomalies</option>
+                </select>
+            </div>
+            {% endfor %}
+
+
+            <button type="submit">Predict</button>
+        </form>
+    </div>
+</body>
+</html>
