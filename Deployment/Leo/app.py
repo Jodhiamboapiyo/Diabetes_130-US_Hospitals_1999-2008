@@ -20,8 +20,7 @@ numerical_columns = [
 ]
 
 categorical_columns = [
-    "race", "gender", "age", "admission_type_id", "discharge_disposition_id",
-    "admission_source_id", "max_glu_serum", "A1Cresult", "metformin",
+    "race", "gender", "age", "max_glu_serum", "A1Cresult", "metformin",
     "repaglinide", "nateglinide", "chlorpropamide", "glimepiride",
     "glipizide", "glyburide", "tolbutamide", "pioglitazone", "rosiglitazone",
     "acarbose", "miglitol", "tolazamide", "insulin", "glyburide-metformin",
@@ -29,8 +28,16 @@ categorical_columns = [
     "diag_3_category"
 ]
 
-# Ensure the final column order matches training data
+# Ensure final column order matches training data
 final_column_order = numerical_columns + list(encoder.get_feature_names_out(categorical_columns))
+
+# Mapping to fix age format issues
+age_mapping = {
+    "0-10": "[0-10)", "10-20": "[10-20)", "20-30": "[20-30)", 
+    "30-40": "[30-40)", "40-50": "[40-50)", "50-60": "[50-60)", 
+    "60-70": "[60-70)", "70-80": "[70-80)", "80-90": "[80-90)", 
+    "90-100": "[90-100)"
+}
 
 @app.route("/")
 def home():
@@ -39,13 +46,18 @@ def home():
 @app.route("/predict", methods=["POST"])
 def predict():
     try:
-        # Get user input and convert to DataFrame
+        # Get user input
         input_data = {col: request.form[col] for col in numerical_columns + categorical_columns}
         input_df = pd.DataFrame([input_data])
 
         # Convert numerical features to correct type
-        for col in numerical_columns:
-            input_df[col] = pd.to_numeric(input_df[col], errors="coerce")
+        input_df[numerical_columns] = input_df[numerical_columns].apply(pd.to_numeric, errors="coerce")
+
+        # Fix age format before encoding
+        input_df["age"] = input_df["age"].map(age_mapping).fillna(input_df["age"])  
+
+        # Convert categorical columns to strings (fix unknown category issue)
+        input_df[categorical_columns] = input_df[categorical_columns].astype(str)
 
         # Apply OneHotEncoder to categorical columns
         encoded_data = encoder.transform(input_df[categorical_columns])
