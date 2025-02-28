@@ -30,7 +30,7 @@ categorical_columns = [
 
 # Fix encoding feature names to avoid errors
 encoded_feature_names = [
-    col.replace("[", "").replace("]", "").replace("<", "").replace(">", "").replace(" ", "_")
+    col.replace("[", "").replace("]", "").replace("<", "").replace(">", "")
     for col in encoder.get_feature_names_out(categorical_columns)
 ]
 
@@ -75,6 +75,9 @@ def predict():
         # Ensure the column order matches training data
         processed_input = processed_input.reindex(columns=final_column_order, fill_value=0)
 
+        # Debugging: Print processed input columns
+        print("Processed Input Columns:", processed_input.columns.tolist())
+
         # Make prediction
         prediction = model.predict(processed_input)
 
@@ -84,6 +87,8 @@ def predict():
         return render_template("homepage.html", prediction=result)
 
     except Exception as e:
+        # Debugging: Print the error
+        print(f"Error during prediction: {str(e)}")
         return render_template("homepage.html", prediction=f"Error: {str(e)}")
 
 if __name__ == "__main__":
